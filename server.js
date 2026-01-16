@@ -35,8 +35,9 @@ async function discoverCDP() {
     for (const port of PORTS) {
         try {
             const list = await getJson(`http://127.0.0.1:${port}/json/list`);
-            const found = list.find(t => t.webSocketDebuggerUrl);
-            if (found) {
+            // Look for workbench specifically (where #cascade exists, which has the chat) 
+            const found = list.find(t => t.url?.includes('workbench.html') || (t.title && t.title.includes('workbench')));
+            if (found && found.webSocketDebuggerUrl) {
                 return { port, url: found.webSocketDebuggerUrl };
             }
         } catch (e) { }
