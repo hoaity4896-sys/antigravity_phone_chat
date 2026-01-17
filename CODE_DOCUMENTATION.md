@@ -59,11 +59,14 @@ graph TD
 | `/health` | GET | Returns server status, CDP connection state, uptime, and timestamp. |
 | `/snapshot` | GET | Returns latest captured HTML/CSS snapshot. |
 | `/app-state` | GET | Returns current Mode (Fast/Planning) and Model. |
+| `/ssl-status` | GET | Returns HTTPS status and certificate info. |
 | `/send` | POST | Sends a message to the Antigravity chat. Always returns 200 (optimistic). |
 | `/stop` | POST | Stops the current AI generation. |
 | `/set-mode` | POST | Changes mode to Fast or Planning. |
 | `/set-model` | POST | Changes the AI model. |
 | `/remote-click` | POST | Triggers a click event on Desktop (for Thought expansion). |
+| `/remote-scroll` | POST | Syncs phone scroll position to Desktop Antigravity. |
+| `/generate-ssl` | POST | Generates SSL certificates (for HTTPS setup via UI). |
 | `/debug-ui` | GET | Returns serialized UI tree for debugging. |
 
 ## HTTPS/SSL Support

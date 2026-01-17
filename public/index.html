@@ -984,6 +984,35 @@
             this.style.height = (this.scrollHeight) + 'px';
         });
 
+        // --- Scroll Sync to Desktop ---
+        let scrollSyncTimeout = null;
+        let lastScrollSync = 0;
+        const SCROLL_SYNC_DEBOUNCE = 150; // ms between scroll syncs
+        let snapshotReloadPending = false;
+
+        async function syncScrollToDesktop() {
+            const scrollPercent = chatContainer.scrollTop / (chatContainer.scrollHeight - chatContainer.clientHeight);
+            try {
+                await fetch('/remote-scroll', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ scrollPercent })
+                });
+
+                // After scrolling desktop, reload snapshot to get newly visible content
+                // (Antigravity uses virtualized scrolling - only visible messages are in DOM)
+                if (!snapshotReloadPending) {
+                    snapshotReloadPending = true;
+                    setTimeout(() => {
+                        loadSnapshot();
+                        snapshotReloadPending = false;
+                    }, 300);
+                }
+            } catch (e) {
+                console.log('Scroll sync failed:', e.message);
+            }
+        }
+
         chatContainer.addEventListener('scroll', () => {
             userIsScrolling = true;
             clearTimeout(idleTimer);
@@ -993,6 +1022,14 @@
                 scrollToBottomBtn.classList.remove('show');
             } else {
                 scrollToBottomBtn.classList.add('show');
+            }
+
+            // Debounced scroll sync to desktop
+            const now = Date.now();
+            if (now - lastScrollSync > SCROLL_SYNC_DEBOUNCE) {
+                lastScrollSync = now;
+                clearTimeout(scrollSyncTimeout);
+                scrollSyncTimeout = setTimeout(syncScrollToDesktop, 100);
             }
 
             idleTimer = setTimeout(() => {

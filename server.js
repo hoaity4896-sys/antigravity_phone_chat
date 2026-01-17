@@ -140,6 +140,15 @@ async function captureSnapshot(cdp) {
         
         const cascadeStyles = window.getComputedStyle(cascade);
         
+        // Find the main scrollable container
+        const scrollContainer = cascade.querySelector('.overflow-y-auto, [data-scroll-area]') || cascade;
+        const scrollInfo = {
+            scrollTop: scrollContainer.scrollTop,
+            scrollHeight: scrollContainer.scrollHeight,
+            clientHeight: scrollContainer.clientHeight,
+            scrollPercent: scrollContainer.scrollTop / (scrollContainer.scrollHeight - scrollContainer.clientHeight) || 0
+        };
+        
         // Clone cascade to modify it without affecting the original
         const clone = cascade.cloneNode(true);
         
@@ -166,6 +175,7 @@ async function captureSnapshot(cdp) {
             backgroundColor: cascadeStyles.backgroundColor,
             color: cascadeStyles.color,
             fontFamily: cascadeStyles.fontFamily,
+            scrollInfo: scrollInfo,
             stats: {
                 nodes: clone.getElementsByTagName('*').length,
                 htmlSize: html.length,
@@ -424,6 +434,59 @@ async function clickElement(cdp, { selector, index, textContent }) {
         } catch (e) { }
     }
     return { error: 'Click failed in all contexts' };
+}
+
+// Remote scroll - sync phone scroll to desktop
+async function remoteScroll(cdp, { scrollTop, scrollPercent }) {
+    // Try to scroll the chat container in Antigravity
+    const EXPRESSION = `(async () => {
+        try {
+            // Find the main scrollable chat container
+            const scrollables = [...document.querySelectorAll('#cascade [class*="scroll"], #cascade [style*="overflow"]')]
+                .filter(el => el.scrollHeight > el.clientHeight);
+            
+            // Also check for the main chat area
+            const chatArea = document.querySelector('#cascade .overflow-y-auto, #cascade [data-scroll-area]');
+            if (chatArea) scrollables.unshift(chatArea);
+            
+            if (scrollables.length === 0) {
+                // Fallback: scroll the main cascade element
+                const cascade = document.querySelector('#cascade');
+                if (cascade && cascade.scrollHeight > cascade.clientHeight) {
+                    scrollables.push(cascade);
+                }
+            }
+            
+            if (scrollables.length === 0) return { error: 'No scrollable element found' };
+            
+            const target = scrollables[0];
+            
+            // Use percentage-based scrolling for better sync
+            if (${scrollPercent} !== undefined) {
+                const maxScroll = target.scrollHeight - target.clientHeight;
+                target.scrollTop = maxScroll * ${scrollPercent};
+            } else {
+                target.scrollTop = ${scrollTop || 0};
+            }
+            
+            return { success: true, scrolled: target.scrollTop };
+        } catch(e) {
+            return { error: e.toString() };
+        }
+    })()`;
+
+    for (const ctx of cdp.contexts) {
+        try {
+            const res = await cdp.call("Runtime.evaluate", {
+                expression: EXPRESSION,
+                returnByValue: true,
+                awaitPromise: true,
+                contextId: ctx.id
+            });
+            if (res.result?.value?.success) return res.result.value;
+        } catch (e) { }
+    }
+    return { error: 'Scroll failed in all contexts' };
 }
 
 // Set AI Model
@@ -811,6 +874,14 @@ async function main() {
             const { selector, index, textContent } = req.body;
             if (!cdpConnection) return res.status(503).json({ error: 'CDP disconnected' });
             const result = await clickElement(cdpConnection, { selector, index, textContent });
+            res.json(result);
+        });
+
+        // Remote Scroll - sync phone scroll to desktop
+        app.post('/remote-scroll', async (req, res) => {
+            const { scrollTop, scrollPercent } = req.body;
+            if (!cdpConnection) return res.status(503).json({ error: 'CDP disconnected' });
+            const result = await remoteScroll(cdpConnection, { scrollTop, scrollPercent });
             res.json(result);
         });
 
