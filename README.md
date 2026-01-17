@@ -18,12 +18,14 @@
     The script will:
     - Verify Node.js is installed.
     - Automatically install dependencies (`npm install`) if they are missing.
-    - Detect and display your **exact IP Address** (e.g., `http://192.168.1.5:3000`).
-    - Provides a tip to use `install_context_menu.bat` for context menu management.
+    - Detect SSL certificates and show `https://` or `http://` accordingly.
+    - Display your **exact IP Address** (e.g., `https://192.168.1.5:3000`).
+    - Provide tips for context menu setup and HTTPS enablement.
 
 2.  **Connect Your Phone**
     - Ensure your phone is on the **same Wi-Fi network** as your PC.
     - Open your mobile browser and enter the **URL shown in the terminal**.
+    - If using HTTPS: Accept the self-signed certificate warning on first visit.
 
 3.  **Launch Antigravity** (if not already running)
     - **Recommended**: Run **`install_context_menu.bat`** and select **[1] Install**. Then, simply right-click any project folder and select **"Open with Antigravity (Debug)"**.
@@ -41,9 +43,9 @@
     The script will:
     - Verify Node.js is installed.
     - Automatically install dependencies.
-    - Detect and display your **exact IP Address**.
-    - *(Linux only)* Provides a tip to use `./install_context_menu.sh` (Install/Remove/Restart/Backup) for Nautilus/GNOME context menu management.
-    - *(macOS)* Provide a command to create a fast shell alias (`ag-debug`).
+    - Detect SSL certificates and display the appropriate protocol.
+    - Display your **exact IP Address**.
+    - *(Linux only)* Provide tips for Nautilus/GNOME context menu management.
 
 2.  **Connect Your Phone**
     - Ensure your phone is on the **same Wi-Fi network**.
@@ -53,6 +55,33 @@
     ```bash
     antigravity . --remote-debugging-port=9000
     ```
+
+---
+
+## 🔒 Enabling HTTPS (Recommended)
+
+For a secure connection without the browser warning icon:
+
+### Option 1: Command Line
+```bash
+node generate_ssl.js
+```
+- Uses **OpenSSL** if available (includes your IP in certificate)
+- Falls back to **Node.js crypto** if OpenSSL not found
+- Creates certificates in `./certs/` directory
+
+### Option 2: Web UI
+1. Start the server on HTTP
+2. Look for the yellow **"⚠️ Not Secure"** banner
+3. Click **"Enable HTTPS"** button
+4. Restart the server when prompted
+
+### After Generating:
+1. **Restart the server** - it will automatically detect and use HTTPS.
+2. **On your phone's first visit**:
+   - You'll see a security warning (normal for self-signed certs).
+   - Tap **"Advanced"** → **"Proceed to site"**.
+   - The warning won't appear again!
 
 ---
 
@@ -78,24 +107,31 @@ Since macOS requires Automator for context menu entries, follow these steps manu
 ---
 
 ## ✨ Features
-- **Real-Time Mirroring**: 1-second polling interval for a near-instant sync experience.
+
+- **🔒 HTTPS Support**: Secure connections with self-signed SSL certificates.
+- **Real-Time Mirroring**: 1-second polling interval for near-instant sync.
 - **Remote Control**: Send messages, stop generations, and switch Modes (Fast/Planning) or Models (Gemini/Claude/GPT) directly from your phone.
-- **Thought Expansion**: Tap on "Thinking..." or "Thought" blocks on your phone to remotely expand them in the desktop IDE.
-- **Smart Sync**: Bi-directional synchronization ensures your phone always shows the current Model and Mode selected on your desktop. Press Refresh to force a full sync.
-- **Premium Mobile UI**: A sleek, dark-themed interface optimized for touch interaction and long-form reading.
-- **Context Menu Management**: Dedicated scripts to **Install, Remove, Restart, or Backup** your Right-Click integrations on Windows and Linux.
+- **Thought Expansion**: Tap on "Thinking..." or "Thought" blocks on your phone to remotely expand/collapse them.
+- **Smart Sync**: Bi-directional synchronization ensures your phone always shows the current Model and Mode selected on your desktop.
+- **Premium Mobile UI**: A sleek, dark-themed interface optimized for touch interaction.
+- **Context Menu Management**: Dedicated scripts to **Install, Remove, Restart, or Backup** your Right-Click integrations.
+- **Health Monitoring**: Built-in `/health` endpoint for server status checks.
+- **Graceful Shutdown**: Clean exit on Ctrl+C, closing all connections properly.
 - **Zero-Config**: The launch scripts handle the heavy lifting of environment setup.
 
 ---
 
 ## 📂 Documentation
+
 For more technical details, check out:
 - [**Code Documentation**](CODE_DOCUMENTATION.md) - Architecture, Data Flow, and API.
+- [**Security Guide**](SECURITY.md) - HTTPS setup, certificate warnings, and security model.
 - [**Design Philosophy**](DESIGN_PHILOSOPHY.md) - Why it was built this way.
 - [**Contributing**](CONTRIBUTING.md) - Guidelines for developers.
 
 ---
 
 ## License
+
 Licensed under the [GNU GPL v3](LICENSE).  
 Copyright (C) 2026 **Krishna Kanth B** (@krishnakanthb13)
