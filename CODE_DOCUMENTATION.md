@@ -187,3 +187,10 @@ The system utilizes a unidirectional master-slave architecture for state managem
 - **Snapshot Polling**: The server polls the Antigravity CDP endpoint every `1000ms` to check for UI changes.
 - **Delta Detection**: To minimize processing pressure, the system calculates a 36-char hash of the captured HTML. A full broadcast (Snapshot Update) ONLY occurs if the hash changes.
 - **Interaction Overhead**: Typical POST interactions (sending a message or changing a model) have a latency overhead of `<100ms`, making the remote interaction feel near-instant.
+
+### Snapshot Cleanup & Interaction Filtering
+To ensure a clean "Observation Mode" on mobile, the server performs an aggressive cleanup of the captured DOM before sending it to the client:
+1.  **Interaction Area Removal**: The entire bottom interaction wrapper (input box, send buttons, model selection) is identified and removed.
+2.  **Context Bar Hiding**: "Review Changes" and "Files With Changes" bars are automatically stripped using structural and keyword-based filtering.
+3.  **Visual Overrides**: Custom CSS injections ensure that Desktop-specific UI elements (like scrollbars or specific borders) are masked or styled for mobile responsiveness.
+4.  **Error-Safe Cleanup**: The filtering logic uses `try-catch` blocks and safe `classList` checks to prevent CDP execution errors when encountering legacy or non-standard SVG elements.

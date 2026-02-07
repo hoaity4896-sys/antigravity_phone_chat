@@ -148,6 +148,7 @@ Since macOS requires Automator for context menu entries, follow these steps manu
 
 ## ✨ Features
 
+- **🧹 Clean Mobile View (NEW!)**: Automatically filters out "Review Changes" bars, "Linked Objects," and Desktop-specific input areas to keep your phone view focused purely on the chat and code content.
 - **📜 Chat History (NEW!)**: Full-screen history management layer for mobile. Switch between multiple conversations easily.
 - **🖼️ Context Menu Icons (NEW!)**: Visual icons in the right-click menu for better navigation.
 - **🌍 Global Web Access**: Secure remote access via ngrok tunnel. Access your AI from mobile data with passcode protection.
