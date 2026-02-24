@@ -155,17 +155,9 @@ def do_start():
     else:      print(f"  🌐  {dim('Tailscale')}  {dim('not detected')}")
     print(SEP)
 
-    # Open QR in new Terminal window
-    qr_script = os.path.join(DIR, "show_qr.py")
-    qr_args   = f"'📡 WiFi|{local_url}'"
-    if ts_url: qr_args += f" '🌐 Tailscale|{ts_url}'"
-    try:
-        subprocess.Popen(["osascript", "-e", f"""
-tell application "Terminal"
-    activate
-    do script "cd '{DIR}' && python3 '{qr_script}' {qr_args}"
-end tell"""])
-    except: pass
+    # Show QR inline
+    print_qr("Local WiFi", local_url, "📡")
+    if ts_url: print_qr("Tailscale", ts_url, "🌐")
 
     notif_msg = local_url + (f" | {ts_url}" if ts_url else "")
     notify("Antigravity Phone ✅", notif_msg)
