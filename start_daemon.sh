@@ -83,3 +83,23 @@ echo "Dùng stop_daemon.sh để dừng server."
 
 # Gửi macOS notification
 osascript -e "display notification \"$NOTIF_BODY\" with title \"Antigravity Phone ✅\" subtitle \"Server đang chạy | PID $SERVER_PID\""
+
+# Mở Terminal window riêng để hiện QR — scan xong đóng đi
+QR_ARGS="📡 Local WiFi|$LOCAL_URL"
+if [ -n "$TAILSCALE_IP" ]; then
+    QR_ARGS="$QR_ARGS" 
+    osascript <<EOF
+tell application "Terminal"
+    activate
+    do script "cd '$PROJECT_DIR' && python3 show_qr.py '📡 Local WiFi|$LOCAL_URL' '🔒 Tailscale|$TS_URL'"
+end tell
+EOF
+else
+    osascript <<EOF
+tell application "Terminal"
+    activate
+    do script "cd '$PROJECT_DIR' && python3 show_qr.py '📡 Local WiFi|$LOCAL_URL'"
+end tell
+EOF
+fi
+
