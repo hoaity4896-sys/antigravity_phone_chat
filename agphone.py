@@ -99,24 +99,40 @@ def alive(pid):
         return False
     try:
         os.kill(pid, 0)
+        # On Linux, zombies respond to signal 0 but are not truly alive
+        if IS_LINUX:
+            try:
+                with open(f"/proc/{pid}/status") as f:
+                    for line in f:
+                        if line.startswith("State:") and "Z" in line:
+                            return False  # zombie
+            except FileNotFoundError:
+                return False
         return True
     except (ProcessLookupError, PermissionError):
         return False
 
-def kill_server(pid, timeout=4):
-    """Send SIGTERM, wait, then SIGKILL if still alive."""
+def kill_server(pid, port=None, timeout=4):
+    """SIGTERM → wait → SIGKILL. Also kills by port as fallback on Linux."""
     if not alive(pid):
         return
     try:
         os.kill(pid, signal.SIGTERM)
-        for _ in range(timeout * 5):          # check every 0.2s
+        for _ in range(timeout * 5):
             time.sleep(0.2)
             if not alive(pid):
                 return
-        # Still alive → force kill
         os.kill(pid, signal.SIGKILL)
+        time.sleep(0.5)
     except Exception:
         pass
+    # Linux fallback: kill by port if PID-based kill failed
+    if IS_LINUX and port and alive(pid):
+        try:
+            subprocess.run(["fuser", "-k", f"{port}/tcp"],
+                capture_output=True, timeout=5)
+        except Exception:
+            pass
 
 def notify(title, msg):
     try:
@@ -146,11 +162,21 @@ def print_qr(label, url, icon="📱"):
         qr.add_data(url); qr.make(fit=True)
         print(f"\n{SEP}\n  {icon}  {BOLD}{W}{label}{R}\n  {dim('└─')}  {c(url)}\n{SEP}")
         buf = _io.StringIO()
-        qr.print_ascii(invert=True, out=buf)   # FIX: use out= instead of redirecting stdout
+        try:
+            qr.print_ascii(invert=True, out=buf)  # qrcode >= 7.0
+        except TypeError:
+            # Older qrcode doesn't support out= param → redirect stdout
+            old_stdout = sys.stdout
+            sys.stdout = buf
+            try:
+                qr.print_ascii(invert=True)
+            finally:
+                sys.stdout = old_stdout
         for line in buf.getvalue().splitlines():
             print(f"  {G}{line}{R}")
     except ImportError:
         print(f"\n  {icon}  {label}: {c(url)}")
+        print(f"  {dim('tip: pip3 install qrcode  →  enables QR display')}")
 
 def get_urls():
     env = load_env()
@@ -168,7 +194,7 @@ def do_start():
     pid = read_pid()
     if alive(pid):
         print(f"\n  {y('⚡')}  Stopping old server {dim(f'PID {pid}')} ...")
-        kill_server(pid)                         # FIX: SIGTERM + SIGKILL fallback
+        kill_server(pid, port=port)
     # Clean up stale PID file
     try: os.remove(PID_FILE)
     except FileNotFoundError: pass
@@ -219,10 +245,12 @@ def do_start():
 
 
 def do_stop():
+    env = load_env()
+    port = env.get("PORT", "3000")
     pid = read_pid()
     if alive(pid):
         print(f"\n  {y('⚡')}  Stopping server {dim(f'PID {pid}')} ...")
-        kill_server(pid)                         # FIX: proper kill with fallback
+        kill_server(pid, port=port)
         spinner("Shutting down ...", 1.5)
         # Verify
         if alive(pid):
@@ -297,7 +325,9 @@ def do_open_antigravity():
             ]
             for ag in candidates:
                 try:
-                    subprocess.Popen([ag, ".", "--remote-debugging-port=9000"])
+                    # Suppress Electron's "unknown option" stderr warning
+                    subprocess.Popen([ag, ".", "--remote-debugging-port=9000"],
+                        stderr=subprocess.DEVNULL)
                     break
                 except FileNotFoundError:
                     continue

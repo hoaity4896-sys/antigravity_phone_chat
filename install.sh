@@ -77,9 +77,11 @@ ok "qrcode installed"
 # ── .env setup ───────────────────────────────────────────────────────────────
 if [[ ! -f "$DEST/.env" ]]; then
     cp "$DEST/.env.example" "$DEST/.env"
+    # Set working default password (template has placeholder 'your-app-password')
+    sed -i.bak 's/APP_PASSWORD=.*/APP_PASSWORD=antigravity/' "$DEST/.env" && rm -f "$DEST/.env.bak"
     ok ".env created (password: antigravity)"
 else
-    ok ".env already exists"
+    ok ".env already exists — skipping"
 fi
 
 # ── chmod ─────────────────────────────────────────────────────────────────────
