@@ -76,6 +76,29 @@ def get_local_ip():
         s.close()
     return IP
 
+def get_tailscale_ip():
+    """Gets the Tailscale IP address of this machine, if available.
+    Supports both Homebrew and Mac App Store installations."""
+    # Common Tailscale CLI locations on macOS
+    candidates = [
+        "tailscale",  # in PATH (Homebrew)
+        "/Applications/Tailscale.app/Contents/MacOS/Tailscale",  # Mac App Store
+        "/usr/local/bin/tailscale",
+        "/opt/homebrew/bin/tailscale",
+    ]
+    for cmd in candidates:
+        try:
+            result = subprocess.run(
+                [cmd, "ip", "-4"],
+                capture_output=True, text=True, timeout=5
+            )
+            ip = result.stdout.strip()
+            if ip and result.returncode == 0:
+                return ip
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            continue
+    return None
+
 def generate_passcode():
     """Generates a 6-digit passcode."""
     return ''.join(random.choices(string.digits, k=6))
@@ -169,13 +192,28 @@ def main():
             print(f"🔗 URL: {final_url}")
             print(f"🔑 Passcode: Not required for local WiFi (Auto-detected)")
             
-            print("\n📱 Scan this QR Code to connect:")
+            print("\n📱 Scan this QR Code to connect (Local WiFi):")
             print_qr(final_url)
+
+            # --- Tailscale Section ---
+            ts_ip = get_tailscale_ip()
+            if ts_ip:
+                ts_url = f"{protocol}://{ts_ip}:{port}"
+                print("\n" + "="*50)
+                print(f"🔒 TAILSCALE ACCESS (từ bất kỳ đâu)")
+                print("="*50)
+                print(f"🔗 Tailscale URL: {ts_url}")
+                print(f"📍 Tailscale IP:  {ts_ip}")
+                print("\n📱 Scan QR để kết nối qua Tailscale (bật Tailscale trên iPhone):")
+                print_qr(ts_url)
+            else:
+                print("\nℹ️  Tailscale không phát hiện được. Chạy 'tailscale up' nếu muốn dùng.")
+            # --- End Tailscale ---
 
             print("-" * 50)
             print("📝 Steps to Connect:")
-            print("1. Ensure your phone is on the SAME Wi-Fi network as this computer.")
-            print("2. Open your phone's Camera app or a QR scanner.")
+            print("1. Local WiFi: Phone phải cùng mạng WiFi → scan QR đầu tiên.")
+            print("2. Tailscale:  Bật Tailscale trên iPhone → scan QR Tailscale (từ bất kỳ đâu).")
             print("3. Scan the code above OR manually type the URL into your browser.")
             print("4. You should be connected automatically!")
             
