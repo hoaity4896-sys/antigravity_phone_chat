@@ -10,6 +10,10 @@ import subprocess
 import socket
 import time
 import signal
+import platform
+
+IS_MAC   = platform.system() == "Darwin"
+IS_LINUX = platform.system() == "Linux"
 
 # ── ANSI ─────────────────────────────────────────────────────────────────────
 R = "\033[0m"; BOLD = "\033[1m"; DIM = "\033[2m"
@@ -27,7 +31,14 @@ DIR      = os.path.dirname(os.path.abspath(__file__))
 PID_FILE = os.path.join(DIR, ".server.pid")
 LOG_FILE = os.path.join(DIR, "server_log.txt")
 ENV_FILE = os.path.join(DIR, ".env")
-TS_CMD   = "/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+
+# Tailscale CLI candidates (mac + linux)
+TS_CANDIDATES = [
+    "/Applications/Tailscale.app/Contents/MacOS/Tailscale",  # macOS App Store
+    "tailscale",                                              # Linux / Homebrew
+    "/usr/bin/tailscale",
+    "/opt/homebrew/bin/tailscale",
+]
 
 BANNER = f"""{G}{BOLD}
   ░█████╗░░██████╗░  ██████╗░██╗  ██╗░█████╗░███╗░░██╗███████╗
@@ -60,7 +71,7 @@ def local_ip():
     except: return "127.0.0.1"
 
 def tailscale_ip():
-    for cmd in [TS_CMD, "tailscale", "/opt/homebrew/bin/tailscale"]:
+    for cmd in TS_CANDIDATES:
         try:
             r = subprocess.run([cmd, "ip", "-4"], capture_output=True, text=True, timeout=5)
             if r.returncode == 0 and r.stdout.strip():
@@ -82,8 +93,11 @@ def alive(pid):
 
 def notify(title, msg):
     try:
-        subprocess.run(["osascript", "-e",
-            f'display notification "{msg}" with title "{title}"'], capture_output=True)
+        if IS_MAC:
+            subprocess.run(["osascript", "-e",
+                f'display notification "{msg}" with title "{title}"'], capture_output=True)
+        elif IS_LINUX:
+            subprocess.run(["notify-send", title, msg], capture_output=True)
     except: pass
 
 def spinner(msg, secs=2.5):
@@ -211,7 +225,28 @@ def do_logs():
 def do_open_antigravity():
     print(f"\n  {dim('Launching Antigravity in Debug mode ...')}")
     try:
-        subprocess.Popen(["open", "-a", "Antigravity", "--args", "--remote-debugging-port=9000"])
+        if IS_MAC:
+            subprocess.Popen(["open", "-a", "Antigravity", "--args", "--remote-debugging-port=9000"])
+        elif IS_LINUX:
+            # Try common Linux paths for Antigravity
+            candidates = [
+                "antigravity",
+                os.path.expanduser("~/.local/bin/antigravity"),
+                "/usr/local/bin/antigravity",
+                "/opt/Antigravity/antigravity",
+            ]
+            launched = False
+            for ag in candidates:
+                try:
+                    subprocess.Popen([ag, ".", "--remote-debugging-port=9000"])
+                    launched = True
+                    break
+                except FileNotFoundError:
+                    continue
+            if not launched:
+                print(f"  {r('✗')}  Antigravity not found. Run manually:")
+                print(f"       {dim('antigravity . --remote-debugging-port=9000')}")
+                return
         spinner("Waiting for launch ...", 3)
         print(f"  {g('✓')}  Antigravity launched. Open a chat, then {c('[1] Start Server')}.")
     except Exception as e:

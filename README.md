@@ -8,18 +8,20 @@ Real-time mobile monitor và remote control cho Antigravity AI — xem và đi�
 >
 > **Thay đổi bởi [@hoaity4896-sys](https://github.com/hoaity4896-sys):**
 > - Tự động phát hiện **Tailscale IP** (thay thế ngrok)
-> - Hiển thị **2 QR code** cùng lúc: Local WiFi và Tailscale
+> - Hỗ trợ **Ubuntu / Linux** và **macOS**
 
 ---
 
 ## Yêu cầu
 
-- **macOS** với Antigravity đã cài tại `/Applications/Antigravity.app`
-- **Node.js** ≥ 16
-- **Python 3**
-- **Tailscale** cài trên Mac và iPhone (khuyên dùng, thay ngrok)
+| | macOS | Ubuntu/Linux |
+|--|-------|-------------|
+| Antigravity | `/Applications/Antigravity.app` | `antigravity` trong PATH |
+| Node.js ≥ 16 | ✅ | ✅ |
+| Python 3 | ✅ | ✅ |
+| Tailscale | App Store | `sudo apt install tailscale` |
+| Desktop notifications | tích hợp sẵn | `sudo apt install libnotify-bin` |
 
----
 
 ## Cài đặt
 
@@ -36,22 +38,41 @@ APP_PASSWORD=antigravity   # mật khẩu đăng nhập từ phone
 PORT=3000
 ```
 
+**Ubuntu — cài thêm:**
+```bash
+# Node.js
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# Tailscale
+curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.gpg | sudo apt-key add -
+curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+sudo apt update && sudo apt install -y tailscale libnotify-bin
+sudo tailscale up
+```
+
 ---
 
 ## Sử dụng
 
 ### Bước 1: Mở Antigravity ở chế độ Debug
 
+**macOS:**
 ```bash
 open -a Antigravity --args --remote-debugging-port=9000
 ```
 
+**Ubuntu:**
+```bash
+antigravity . --remote-debugging-port=9000
+```
+
 Sau đó mở hoặc tạo 1 chat trong Antigravity.
 
-### Bước 2: Chạy server
+### Bước 2: Chạy CLI
 
 ```bash
-./start_ag_phone_connect.sh
+python3 agphone.py
 ```
 
 Terminal sẽ hiện **2 QR code**:
