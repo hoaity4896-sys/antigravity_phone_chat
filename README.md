@@ -12,6 +12,18 @@ Real-time mobile monitor và remote control cho Antigravity AI — xem và đi�
 > - **Interactive CLI** (`agphone.py`) thay thế các script rời
 
 ---
+## ⚡ Cài đặt nhanh (1 lệnh)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/hoaity4896-sys/antigravity_phone_chat/master/install.sh | bash
+```
+
+Script tự động clone repo, cài npm packages, Python qrcode, tạo `.env`.  
+Sau đó: `cd ~/antigravity_phone_chat && python3 agphone.py`
+
+---
+
+
 
 ## Yêu cầu
 
