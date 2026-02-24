@@ -8,6 +8,12 @@
 
 **Note:** This project is a refined fork/extension based on the original [Antigravity Shit-Chat](https://github.com/gherghett/Antigravity-Shit-Chat) by gherghett.
 
+> **This repository** is a personal fork of [krishnakanthb13/antigravity_phone_chat](https://github.com/krishnakanthb13/antigravity_phone_chat) by [@krishnakanthb13](https://github.com/krishnakanthb13), modified and distributed under the same [GNU GPL v3](LICENSE) license.
+>
+> **Modifications by [@hoaity4896-sys](https://github.com/hoaity4896-sys):**
+> - Added **Tailscale IP auto-detection** support (Mac App Store & Homebrew)
+> - Display separate **QR codes** for Local WiFi and Tailscale access simultaneously
+
 ---
 
 ## 🚀 Quick Start
@@ -184,4 +190,5 @@ For more technical details, check out:
 ## License
 
 Licensed under the [GNU GPL v3](LICENSE).  
-Copyright (C) 2026 **Krishna Kanth B** (@krishnakanthb13)
+Copyright (C) 2026 **Krishna Kanth B** (@krishnakanthb13)  
+Modifications Copyright (C) 2026 **hoaity4896-sys** (@hoaity4896-sys)
