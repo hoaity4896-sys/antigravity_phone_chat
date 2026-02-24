@@ -2,13 +2,14 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-Real-time mobile monitor và remote control cho Antigravity AI — xem và điều khiển AI từ iPhone, từ bất kỳ đâu.
+Real-time mobile monitor và remote control cho Antigravity AI — xem và điều khiển AI từ điện thoại, từ bất kỳ đâu.
 
 > **Fork từ** [krishnakanthb13/antigravity_phone_chat](https://github.com/krishnakanthb13/antigravity_phone_chat), phân phối theo [GNU GPL v3](LICENSE).
 >
 > **Thay đổi bởi [@hoaity4896-sys](https://github.com/hoaity4896-sys):**
-> - Tự động phát hiện **Tailscale IP** (thay thế ngrok)
-> - Hỗ trợ **Ubuntu / Linux** và **macOS**
+> - Tự động phát hiện **Tailscale IP** (không cần ngrok)
+> - Hỗ trợ **macOS và Ubuntu/Linux**
+> - **Interactive CLI** (`agphone.py`) thay thế các script rời
 
 ---
 
@@ -19,9 +20,10 @@ Real-time mobile monitor và remote control cho Antigravity AI — xem và đi�
 | Antigravity | `/Applications/Antigravity.app` | `antigravity` trong PATH |
 | Node.js ≥ 16 | ✅ | ✅ |
 | Python 3 | ✅ | ✅ |
-| Tailscale | App Store | `sudo apt install tailscale` |
+| Tailscale | App Store | xem bên dưới |
 | Desktop notifications | tích hợp sẵn | `sudo apt install libnotify-bin` |
 
+---
 
 ## Cài đặt
 
@@ -30,25 +32,28 @@ git clone https://github.com/hoaity4896-sys/antigravity_phone_chat.git
 cd antigravity_phone_chat
 npm install
 cp .env.example .env
+pip3 install qrcode        # để hiện QR code trong terminal
 ```
 
 Chỉnh `.env`:
 ```env
-APP_PASSWORD=antigravity   # mật khẩu đăng nhập từ phone
+APP_PASSWORD=antigravity   # mật khẩu đăng nhập từ điện thoại
 PORT=3000
 ```
 
-**Ubuntu — cài thêm:**
+### Ubuntu — cài thêm
+
 ```bash
-# Node.js
+# Node.js 20
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 
-# Tailscale
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.gpg | sudo apt-key add -
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.list | sudo tee /etc/apt/sources.list.d/tailscale.list
-sudo apt update && sudo apt install -y tailscale libnotify-bin
+# Tailscale (cách chính thức, luôn mới nhất)
+curl -fsSL https://tailscale.com/install.sh | sh
 sudo tailscale up
+
+# Desktop notifications (cho agphone.py)
+sudo apt install -y libnotify-bin
 ```
 
 ---
@@ -57,7 +62,7 @@ sudo tailscale up
 
 ### Bước 1: Mở Antigravity ở chế độ Debug
 
-**macOS:**
+**macOS** — chạy lệnh hoặc dùng option `[0]` trong CLI:
 ```bash
 open -a Antigravity --args --remote-debugging-port=9000
 ```
@@ -67,7 +72,7 @@ open -a Antigravity --args --remote-debugging-port=9000
 antigravity . --remote-debugging-port=9000
 ```
 
-Sau đó mở hoặc tạo 1 chat trong Antigravity.
+> Sau đó mở hoặc tạo 1 chat trong Antigravity. Server cần có chat session active.
 
 ### Bước 2: Chạy CLI
 
@@ -75,19 +80,29 @@ Sau đó mở hoặc tạo 1 chat trong Antigravity.
 python3 agphone.py
 ```
 
-Terminal sẽ hiện **2 QR code**:
+Menu options:
+
+| Key | Chức năng |
+|-----|-----------|
+| `0` | Mở Antigravity (Debug mode) |
+| `1` | Start server (chạy nền, hiện QR inline) |
+| `2` | Stop server |
+| `r` | Restart server |
+| `3` | Status — IP, PID, Tailscale |
+| `4` | Hiện QR code bất kỳ lúc nào |
+| `5` | Tail live logs |
+| `q` | Thoát |
+
+### Bước 3: Kết nối điện thoại
+
+Sau khi start, CLI hiện **2 QR code**:
 
 | QR | Dùng khi |
 |---|---|
-| 📡 Local WiFi | iPhone cùng mạng WiFi với Mac |
-| 🔒 Tailscale | Bất kỳ đâu (4G, mạng khác) — bật Tailscale trên iPhone |
+| 📡 Local WiFi | Điện thoại cùng mạng WiFi |
+| 🌐 Tailscale | Bất kỳ đâu (4G, mạng khác) — bật Tailscale trên điện thoại |
 
-### Bước 3: Kết nối iPhone
-
-- **Tailscale (khuyên dùng):** Bật Tailscale trên iPhone → scan QR Tailscale
-- **Local WiFi:** Đảm bảo cùng mạng → scan QR WiFi
-
-Lần đầu: iPhone sẽ cảnh báo HTTPS certificate → chọn **"Advanced" → "Proceed"**
+**Lần đầu kết nối HTTPS:** điện thoại cảnh báo certificate → chọn **"Advanced" → "Proceed"** là vào được.
 
 ---
 
@@ -97,18 +112,19 @@ Lần đầu: iPhone sẽ cảnh báo HTTPS certificate → chọn **"Advanced" 
 node generate_ssl.js
 ```
 
-Khởi động lại server sau khi tạo certificate.
+Restart server sau khi tạo certificate. Tailscale đã mã hóa end-to-end nên HTTPS là optional.
 
 ---
 
 ## Tính năng
 
-- 📸 Mirror realtime giao diện Antigravity lên iPhone
-- ✍️ Gửi message từ iPhone
+- 📸 Mirror realtime giao diện Antigravity lên điện thoại
+- ✍️ Gửi message, dừng generation từ điện thoại
 - 🔄 Chuyển Model/Mode (Gemini/Claude/GPT, Fast/Planning)
 - 📜 Xem lịch sử chat, mở chat cũ
-- ➕ Tạo chat mới từ iPhone
-- 🔒 Kết nối Tailscale — không cần cùng WiFi, không cần ngrok
+- ➕ Tạo chat mới từ điện thoại
+- 🌐 Kết nối qua Tailscale — không cần cùng WiFi, không cần ngrok
+- 🖥️ Hỗ trợ macOS và Ubuntu/Linux
 
 ---
 
