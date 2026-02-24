@@ -2,193 +2,98 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-**Antigravity Phone Connect** is a high-performance, real-time mobile monitor and remote control for your Antigravity AI sessions. It allows you to step away from your desk while keeping full sight and control over your AI's thinking process and generations.
+Real-time mobile monitor và remote control cho Antigravity AI — xem và điều khiển AI từ iPhone, từ bất kỳ đâu.
 
-![Antigravity Phone Connect](./assets/global_access_hero_2.png)
-
-**Note:** This project is a refined fork/extension based on the original [Antigravity Shit-Chat](https://github.com/gherghett/Antigravity-Shit-Chat) by gherghett.
-
-> **This repository** is a personal fork of [krishnakanthb13/antigravity_phone_chat](https://github.com/krishnakanthb13/antigravity_phone_chat) by [@krishnakanthb13](https://github.com/krishnakanthb13), modified and distributed under the same [GNU GPL v3](LICENSE) license.
+> **Fork từ** [krishnakanthb13/antigravity_phone_chat](https://github.com/krishnakanthb13/antigravity_phone_chat), phân phối theo [GNU GPL v3](LICENSE).
 >
-> **Modifications by [@hoaity4896-sys](https://github.com/hoaity4896-sys):**
-> - Added **Tailscale IP auto-detection** support (Mac App Store & Homebrew)
-> - Display separate **QR codes** for Local WiFi and Tailscale access simultaneously
+> **Thay đổi bởi [@hoaity4896-sys](https://github.com/hoaity4896-sys):**
+> - Tự động phát hiện **Tailscale IP** (thay thế ngrok)
+> - Hiển thị **2 QR code** cùng lúc: Local WiFi và Tailscale
 
 ---
 
-## 🚀 Quick Start
+## Yêu cầu
 
-> 💡 **Tip:** While we recommend starting Antigravity first, the server is now smart enough to wait and automatically connect whenever Antigravity becomes available!
+- **macOS** với Antigravity đã cài tại `/Applications/Antigravity.app`
+- **Node.js** ≥ 16
+- **Python 3**
+- **Tailscale** cài trên Mac và iPhone (khuyên dùng, thay ngrok)
 
-### Step 1: Launch Antigravity in Debug Mode
+---
 
-Start Antigravity with the remote debugging port enabled:
+## Cài đặt
 
-**Option A: Using Right-Click Context Menu (Recommended)**
-- Run `install_context_menu.bat` (Windows) or `./install_context_menu.sh` (Linux) and select **[1] Install**
-- Then right-click any project folder → **"Open with Antigravity (Debug)"** (now with visual icons!)
-
-**Option B: Manual Command**
 ```bash
-antigravity . --remote-debugging-port=9000
+git clone https://github.com/hoaity4896-sys/antigravity_phone_chat.git
+cd antigravity_phone_chat
+npm install
+cp .env.example .env
 ```
 
-### Step 2: Open or Start a Chat
-
-- In Antigravity, open an **existing chat** from the bottom-right panel, **OR**
-- Start a **new chat** by typing a message
-
-> 💡 The server needs an active chat session to capture snapshots. Without this, you'll see "chat container not found" errors.
-
-### Step 3: Run the Server
-
-**Windows:**
-```
-Double-click start_ag_phone_connect.bat
+Chỉnh `.env`:
+```env
+APP_PASSWORD=antigravity   # mật khẩu đăng nhập từ phone
+PORT=3000
 ```
 
-**macOS / Linux:**
+---
+
+## Sử dụng
+
+### Bước 1: Mở Antigravity ở chế độ Debug
+
 ```bash
-chmod +x start_ag_phone_connect.sh   # First time only
+open -a Antigravity --args --remote-debugging-port=9000
+```
+
+Sau đó mở hoặc tạo 1 chat trong Antigravity.
+
+### Bước 2: Chạy server
+
+```bash
 ./start_ag_phone_connect.sh
 ```
 
-The script will:
-- Verify Node.js and Python dependencies
-- Auto-kill any existing server on port 3000
-- **Wait for Antigravity** if it's not started yet
-- Display a **QR Code** and your **Link** (e.g., `https://192.168.1.5:3000`)
-- Provide numbered steps for easy connection
+Terminal sẽ hiện **2 QR code**:
 
-### Step 4: Connect Your Phone (Local Wi-Fi)
+| QR | Dùng khi |
+|---|---|
+| 📡 Local WiFi | iPhone cùng mạng WiFi với Mac |
+| 🔒 Tailscale | Bất kỳ đâu (4G, mạng khác) — bật Tailscale trên iPhone |
 
-1. Ensure your phone is on the **same Wi-Fi network** as your PC
-2. Open your mobile browser and enter the **URL shown in the terminal**
-3. If using HTTPS: Accept the self-signed certificate warning on first visit
+### Bước 3: Kết nối iPhone
 
----
+- **Tailscale (khuyên dùng):** Bật Tailscale trên iPhone → scan QR Tailscale
+- **Local WiFi:** Đảm bảo cùng mạng → scan QR WiFi
 
-## 🌍 NEW: Global Remote Access (Web Mode)
-
-Access your Antigravity session from **anywhere in the world** (Mobile Data, outside Wi-Fi) with secure passcode protection.
-
-### Setup (First Time)
-1. **Get an ngrok Token**: Sign up for free at [ngrok.com](https://ngrok.com) and get your "Authtoken".
-2. **Automatic Configuration (Recommended)**: Simply run any launcher script. They will detect if `.env` is missing and automatically create it using `.env.example` as a template.
-3. **Manual Setup**: Alternatively, copy `.env.example` to `.env` manually and update the values:
-   ```bash
-   copy .env.example .env   # Windows
-   cp .env.example .env     # Mac/Linux
-   ```
-   Update the `.env` file with your details:
-   ```env
-   NGROK_AUTHTOKEN=your_token_here
-   APP_PASSWORD=your_secure_passcode
-   XXX_API_KEY=your-ai-provider-key
-   PORT=3000
-   ```
-
-### Usage
-- **Windows**: Run `start_ag_phone_connect_web.bat`
-- **Mac/Linux**: Run `./start_ag_phone_connect_web.sh`
-
-The script will launch the server and provide a **Public URL** (e.g., `https://abcd-123.ngrok-free.app`). 
-
-**Two Ways to Connect:**
-1. **Magic Link (Easiest)**: Scan the **Magic QR Code** displayed in the terminal. It logs you in automatically!
-2. **Manual**: 
-   - Open the URL on your phone.
-   - Enter your `APP_PASSWORD` to log in.
-
-> 💡 **Tip:** Devices on the same local Wi-Fi still enjoy direct access without needing a password.
+Lần đầu: iPhone sẽ cảnh báo HTTPS certificate → chọn **"Advanced" → "Proceed"**
 
 ---
 
-## 🔒 Enabling HTTPS (Recommended)
+## HTTPS (khuyên dùng)
 
-For a secure connection without the browser warning icon:
-
-### Option 1: Command Line
 ```bash
 node generate_ssl.js
 ```
-- Uses **OpenSSL** if available (includes your IP in certificate)
-- Falls back to **Node.js crypto** if OpenSSL not found
-- Creates certificates in `./certs/` directory
 
-### Option 2: Web UI
-1. Start the server on HTTP
-2. Look for the yellow **"⚠️ Not Secure"** banner
-3. Click **"Enable HTTPS"** button
-4. Restart the server when prompted
-
-### After Generating:
-1. **Restart the server** - it will automatically detect and use HTTPS.
-2. **On your phone's first visit**:
-   - You'll see a security warning (normal for self-signed certs).
-   - Tap **"Advanced"** → **"Proceed to site"**.
-   - The warning won't appear again!
+Khởi động lại server sau khi tạo certificate.
 
 ---
 
-### macOS: Adding Right-Click "Quick Action" (Optional)
+## Tính năng
 
-Since macOS requires Automator for context menu entries, follow these steps manually:
-
-1.  Open **Automator** (Spotlight → type "Automator").
-2.  Click **File → New** and select **Quick Action**.
-3.  At the top, set:
-    - "Workflow receives current" → **folders**
-    - "in" → **Finder**
-4.  In the left sidebar, search for **"Run Shell Script"** and drag it to the right pane.
-5.  Set "Shell" to `/bin/zsh` and "Pass input" to **as arguments**.
-6.  Paste this script:
-    ```bash
-    cd "$1"
-    antigravity . --remote-debugging-port=9000
-    ```
-7.  **Save** the Quick Action with a name like `Open with Antigravity (Debug)`.
-8.  Now you can right-click any folder in Finder → **Quick Actions → Open with Antigravity (Debug)**.
-
----
-
-## ✨ Features
-
-- **🧹 Clean Mobile View (NEW!)**: Automatically filters out "Review Changes" bars, "Linked Objects," and Desktop-specific input areas to keep your phone view focused purely on the chat and code content.
-- **Glassmorphism UI (NEW!)**: Sleek and modern quick-action and settings menus featuring a beautiful glassmorphism effect for enhanced mobile usability.
-- **🌙 Improved Dark Mode (NEW!)**: Enhanced UI styling and state capture designed to provide maximum clarity and correct model detection in dark mode.
-- **🧠 Latest AI Models**: Automatically updated support for the latest model versions from Gemini, Claude, and OpenAI.
-- **📜 Smart Chat History (NEW!)**: Full-screen history management with intelligent scraping. Switch between conversations, see timestamps, and manage multiple sessions directly from mobile.
-- **➕ One-Tap New Chat (NEW!)**: Start a fresh conversation instantly from your phone without needing to touch your desktop.
-- **🖼️ Context Menu Icons (NEW!)**: Visual icons in the right-click menu for better navigation.
-- **🌍 Global Web Access**: Secure remote access via ngrok tunnel. Access your AI from mobile data with passcode protection.
-- **🛡️ Auto-Cleanup**: Launchers now automatically sweep away "ghost" processes from previous sessions for a clean start every time.
-- **🔒 HTTPS Support**: Secure connections with self-signed SSL certificates.
-- **Real-Time Mirroring**: 1-second polling interval for near-instant sync.
-- **Remote Control**: Send messages, stop generations, and switch Modes (Fast/Planning) or Models (Gemini/Claude/GPT) directly from your phone.
-- **Scroll Sync**: When you scroll on your phone, the desktop Antigravity scrolls too!
-- **Thought Expansion**: Tap on "Thinking..." or "Thought" blocks on your phone to remotely expand/collapse them.
-- **Smart Sync**: Bi-directional synchronization ensures your phone always shows the current Model and Mode selected on your desktop.
-- **Premium Mobile UI**: A sleek, dark-themed interface optimized for touch interaction.
-- **Context Menu Management**: Dedicated scripts to **Install, Remove, Restart, or Backup** your Right-Click integrations.
-- **Health Monitoring**: Built-in `/health` endpoint for server status checks.
-- **Graceful Shutdown**: Clean exit on Ctrl+C, closing all connections properly.
-- **Zero-Config**: The launch scripts handle the heavy lifting of environment setup.
-
----
-
-## 📂 Documentation
-
-For more technical details, check out:
-- [**Code Documentation**](CODE_DOCUMENTATION.md) - Architecture, Data Flow, and API.
-- [**Security Guide**](SECURITY.md) - HTTPS setup, certificate warnings, and security model.
-- [**Design Philosophy**](DESIGN_PHILOSOPHY.md) - Why it was built this way.
-- [**Contributing**](CONTRIBUTING.md) - Guidelines for developers.
+- 📸 Mirror realtime giao diện Antigravity lên iPhone
+- ✍️ Gửi message từ iPhone
+- 🔄 Chuyển Model/Mode (Gemini/Claude/GPT, Fast/Planning)
+- 📜 Xem lịch sử chat, mở chat cũ
+- ➕ Tạo chat mới từ iPhone
+- 🔒 Kết nối Tailscale — không cần cùng WiFi, không cần ngrok
 
 ---
 
 ## License
 
-Licensed under the [GNU GPL v3](LICENSE).  
+GNU GPL v3 — xem [LICENSE](LICENSE).
+
 Copyright (C) 2026 **Krishna Kanth B** (@krishnakanthb13)  
 Modifications Copyright (C) 2026 **hoaity4896-sys** (@hoaity4896-sys)
